@@ -1,0 +1,10 @@
+{
+  "class_index_to_name": {
+    "0": "stable_single_mode",
+    "1": "mode_hop",
+    "2": "clipped",
+    "3": "high_noise",
+    "4": "multi_mode"
+  },
+  "num_classes": 5
+}
