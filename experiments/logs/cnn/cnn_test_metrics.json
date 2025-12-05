@@ -1,0 +1,15 @@
+{
+  "model": "SpectraCNN",
+  "checkpoint_path": "../experiments/logs/cnn/best_cnn.pt",
+  "epoch": 4,
+  "val_acc": 0.9153333333333333,
+  "test_acc": 0.9033333333333333,
+  "test_loss": 0.3375533569653829,
+  "class_mapping": {
+    "0": "stable_single_mode",
+    "1": "mode_hop",
+    "2": "clipped",
+    "3": "high_noise",
+    "4": "multi_mode"
+  }
+}
