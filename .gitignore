@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Logs & misc
+*.log
+
+# PyTorch / ML artifacts (optional)
+*.pt
+*.pth
+*.ckpt
