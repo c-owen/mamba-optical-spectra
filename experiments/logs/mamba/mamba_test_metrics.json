@@ -1,0 +1,15 @@
+{
+  "model": "SpectraMamba",
+  "checkpoint_path": "../experiments/logs/mamba/best_cnn.pt",
+  "epoch": 12,
+  "val_acc": 0.918,
+  "test_acc": 0.9013333333333333,
+  "test_loss": 0.30579304162661236,
+  "class_mapping": {
+    "0": "stable_single_mode",
+    "1": "mode_hop",
+    "2": "clipped",
+    "3": "high_noise",
+    "4": "multi_mode"
+  }
+}

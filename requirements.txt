@@ -3,5 +3,4 @@ scipy
 matplotlib
 scikit-learn
 tqdm
-torch
 notebook
