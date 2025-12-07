@@ -1,136 +1,102 @@
 import logging
-from typing import Optional
-
 import torch
 import torch.nn as nn
+from mamba_ssm import Mamba
 
 logger = logging.getLogger(__name__)
 
-
-class SimpleMambaBlock(nn.Module):
+class MambaBlock(nn.Module):
     """
-    A lightweight, Mamba-inspired 1D sequence block for spectra.
-
-    This is NOT a full reproduction of the original Mamba architecture, but
-    captures some key ideas:
-      - sequence mixing via depthwise Conv1d
-      - gating
-      - residual connection
-      - normalization over channels
-
-    Input:  [B, C, L]
-    Output: [B, C, L]
+    Helper block that applies:
+    1. LayerNorm
+    2. Mamba Mixer
+    3. Residual Connection
     """
-
-    def __init__(
-        self,
-        d_model: int,
-        kernel_size: int = 5,
-    ) -> None:
+    def __init__(self, d_model, d_state, d_conv, expand):
         super().__init__()
-
-        self.d_model = d_model
-
-        # Depthwise conv for sequence mixing (per-channel)
-        self.conv = nn.Conv1d(
-            in_channels=d_model,
-            out_channels=d_model,
-            kernel_size=kernel_size,
-            padding=kernel_size // 2,
-            groups=d_model,
-        )
-
-        # Channel mixing + gating
-        self.in_proj = nn.Conv1d(d_model, 2 * d_model, kernel_size=1)
-        self.out_proj = nn.Conv1d(d_model, d_model, kernel_size=1)
-
-        # Normalize over channels (LayerNorm expects [B, L, C])
         self.norm = nn.LayerNorm(d_model)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x: [B, C, L]
-
-        Returns:
-            [B, C, L]
-        """
+        self.mamba = Mamba(
+                d_model=d_model,
+                d_state=d_state,
+                d_conv=d_conv,
+                expand=expand,
+                use_fast_path=False, # Keep false if debugging, True for speed
+            )
+        
+    def forward(self, x):
+        # Save input for residual
         residual = x
-
-        # Normalize across channels at each position
-        x_ln = x.transpose(1, 2)          # [B, L, C]
-        x_ln = self.norm(x_ln)
-        x_ln = x_ln.transpose(1, 2)       # [B, C, L]
-
-        # Depthwise conv mixes along sequence dimension
-        x_conv = self.conv(x_ln)          # [B, C, L]
-
-        # Gated channel mixing
-        uv = self.in_proj(x_conv)         # [B, 2C, L]
-        u, v = torch.chunk(uv, chunks=2, dim=1)
-        x_gated = torch.sigmoid(v) * u    # [B, C, L]
-
-        # Output projection and residual
-        x_out = self.out_proj(x_gated)    # [B, C, L]
-        return x_out + residual
-
+        
+        # 1. Normalize
+        x = self.norm(x)
+        
+        # 2. Mamba Mixer
+        x = self.mamba(x)
+        
+        # 3. Add Residual
+        return x + residual
 
 class SpectraMamba(nn.Module):
-    """
-    Mamba-style model for 1D optical spectra classification.
-
-    Input:  [B, 1, L]
-    Output: [B, num_classes]
-    """
-
     def __init__(
         self,
         num_classes: int,
         in_channels: int = 1,
         d_model: int = 64,
-        num_layers: int = 4,
-        kernel_size: int = 5,
+        num_layers: int = 2,
+        d_state: int = 8,
+        d_conv: int = 2,
+        expand: int = 1,
     ) -> None:
         super().__init__()
 
-        self.in_proj = nn.Conv1d(in_channels, d_model, kernel_size=1)
+        self.num_classes = num_classes
+        self.d_model = d_model
 
+        # Project scalar intensity -> d_model feature space
+        self.input_proj = nn.Linear(in_channels, d_model)
+
+        # Stack of Mamba BLOCKS (now with residuals and norms)
         self.layers = nn.ModuleList(
             [
-                SimpleMambaBlock(
+                MambaBlock(
                     d_model=d_model,
-                    kernel_size=kernel_size,
+                    d_state=d_state,
+                    d_conv=d_conv,
+                    expand=expand
                 )
                 for _ in range(num_layers)
             ]
         )
 
-        # Global pooling over wavelength axis
-        self.pool = nn.AdaptiveAvgPool1d(output_size=1)
+        # Final Normalization (standard practice before the head)
+        self.norm = nn.LayerNorm(d_model)
 
-        self.classifier = nn.Linear(d_model, num_classes)
+        # Final classifier
+        self.head = nn.Linear(d_model, num_classes)
 
         logger.info(
-            "Initialized SpectraMamba with d_model=%d, num_layers=%d, num_classes=%d",
-            d_model,
-            num_layers,
-            num_classes,
+            "Initialized REAL SpectraMamba (mamba-ssm) with "
+            "d_model=%d, num_layers=%d, d_state=%d, d_conv=%d, expand=%d, num_classes=%d",
+            d_model, num_layers, d_state, d_conv, expand, num_classes,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x: [B, in_channels, L]
+        # [B, 1, L] -> [B, L, 1]
+        x = x.transpose(1, 2)
 
-        Returns:
-            logits: [B, num_classes]
-        """
-        x = self.in_proj(x)  # [B, d_model, L]
+        # [B, L, 1] -> [B, L, d_model]
+        x = self.input_proj(x)
 
+        # Pass through stacked Mamba Blocks
         for layer in self.layers:
-            x = layer(x)      # [B, d_model, L]
+            x = layer(x)   # Now includes norm and residual
 
-        x = self.pool(x)      # [B, d_model, 1]
-        x = x.squeeze(-1)     # [B, d_model]
-        logits = self.classifier(x)
+        # Final Norm
+        x = self.norm(x)
+
+        # Global average pooling
+        x = x.mean(dim=1)
+
+        # Classifier
+        logits = self.head(x)
         return logits

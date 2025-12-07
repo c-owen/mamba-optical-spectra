@@ -52,6 +52,7 @@ def train_one_epoch(
         outputs = model(inputs)
         loss = criterion(outputs, targets)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
 
         running_loss += loss.item() * inputs.size(0)
@@ -168,9 +169,11 @@ def main() -> None:
     model = SpectraMamba(
         num_classes=num_classes,
         in_channels=1,
-        d_model=128,
-        num_layers=6,
-        kernel_size=7,
+        d_model=getattr(args, "d_model", 128),
+        num_layers=getattr(args, "num_layers", 6),
+        d_state=16,
+        d_conv=getattr(args, "kernel_size", 4),  # repurpose kernel_size as d_conv if you like
+        expand=2,
     )
     model.to(device)
 
@@ -184,7 +187,7 @@ def main() -> None:
     run_dir = Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     best_val_acc = 0.0
-    best_model_path = run_dir / "best_cnn.pt"
+    best_model_path = run_dir / "best_mamba.pt"
 
     logging.info("Starting training for %d epochs", args.epochs)
     start_time = time.time()

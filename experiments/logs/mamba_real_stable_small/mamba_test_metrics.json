@@ -1,0 +1,22 @@
+{
+  "model": "SpectraMamba",
+  "checkpoint_path": "../experiments/logs/mamba_real_stable_small/best_mamba.pt",
+  "epoch": 20,
+  "val_acc": 0.974,
+  "test_acc": 0.97,
+  "test_loss": 0.09934582251310349,
+  "class_mapping": {
+    "0": "stable_single_mode",
+    "1": "mode_hop",
+    "2": "clipped",
+    "3": "high_noise",
+    "4": "multi_mode"
+  },
+  "mamba_config": {
+    "d_model": 64,
+    "num_layers": 2,
+    "d_state": 8,
+    "d_conv": 2,
+    "expand": 1
+  }
+}

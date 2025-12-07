@@ -1,0 +1,17 @@
+{
+  "num_classes": 4,
+  "class_names": [
+    "Q1",
+    "Q2",
+    "Q3",
+    "Q4"
+  ],
+  "impairments": {
+    "cd_max": 20.0,
+    "pn_max": 0.1,
+    "snr_range": [
+      10.0,
+      20.0
+    ]
+  }
+}
