@@ -195,8 +195,8 @@ def run_simulation():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.info(f"Running FEC Loop on {device}")
 
-    # A. Setup
-    n_data_bits = 20000 
+    # A. Setup (Align count with Script 2)
+    n_data_bits = 50000 
     rng = np.random.default_rng(42)
     
     # B. Generate & Encode
@@ -204,39 +204,37 @@ def run_simulation():
     encoded_bits = encode_sys(tx_bits)
     logging.info(f"FEC Encoded: {len(tx_bits)} -> {len(encoded_bits)} bits.")
 
-    interleaver = MatrixInterleaver(depth=42) # Depth 21 spreads 1 burst error across 3 Hamming blocks
+    interleaver = MatrixInterleaver(depth=42)
     tx_bits_interleaved, orig_len = interleaver.interleave(encoded_bits)
     
-    encoded_bits = encode_sys(tx_bits)
-    logging.info(f"FEC Encoded: {len(tx_bits)} -> {len(encoded_bits)} bits.")
+    # REMOVED: The redundant re-encoding line was here.
     
     # C. Modulate
     tx_symbols_c, tx_indices = bits_to_symbols(tx_bits_interleaved)
     
     # Pad to match Training Sequence Length (1024)
-    # Using 512 might work, but 1024 is safer to match training distribution exactly
     seq_len = 1024 
     n_syms = len(tx_symbols_c)
     n_batches = int(np.ceil(n_syms / seq_len))
     pad_len = n_batches * seq_len - n_syms
     
-    tx_symbols_padded = np.pad(tx_symbols_c, (0, pad_len), constant_values=SYMBOL_MAP[0])
+    tx_symbols_padded = np.pad(tx_symbols_c, (0, pad_len), constant_values=0)
     
     # D. Apply Channel 
-    # NOTE: Phase Noise DISABLED to verify Dispersion logic first
-    logging.info("Applying Channel (CD=20.0, AWGN, NO Phase Noise)...")
+    logging.info("Applying Channel (CD=20.0, AWGN, Phase Noise=1e-5)...")
     
     rx_batch_list = []
     for i in range(n_batches):
         sig = tx_symbols_padded[i*seq_len : (i+1)*seq_len]
         
-        # 1. Local Physics (Exact Match to Training)
+        # 1. Local Physics
         sig = apply_chromatic_dispersion_local(sig, cd_value=20.0)
         
-        # 2. Phase Noise - COMMENTED OUT
+        # 2. Phase Noise (UNCOMMENTED)
+        # Using 1e-5 to match Script 2's LINEWIDTH constant
         sig = apply_phase_noise(sig, linewidth_rate=1e-5, rng=rng)
         
-        # 3. AWGN (High SNR to isolate logic)
+        # 3. AWGN
         sig = apply_awgn_local(sig, snr_db=20.0, rng=rng)
         
         sample_iq = np.stack([sig.real, sig.imag], axis=0)
