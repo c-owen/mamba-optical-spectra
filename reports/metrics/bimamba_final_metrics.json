@@ -1,6 +1,0 @@
-{
-  "model": "CoherentBiMamba",
-  "dataset": "High Dispersion (50k)",
-  "test_acc": 0.9925846354166666,
-  "test_loss": 0.0318234773705403
-}

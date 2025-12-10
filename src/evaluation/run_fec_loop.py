@@ -71,7 +71,7 @@ def apply_chromatic_dispersion_local(signal, cd_value=20.0):
     
     # Phase Factor (Exact copy)
     # Note: Generator used cd_val * 1e-12. 
-    phase_factor = constant_factor * cd_value * 1e-12
+    phase_factor = constant_factor * cd_value * 1e-6
     
     transfer_func = np.exp(-1j * phase_factor * (freqs**2))
     

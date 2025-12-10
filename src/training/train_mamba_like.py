@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from src.data.datasets import get_dataloaders, get_class_mapping
+from src.data.datasets_depricated.datasets import get_dataloaders, get_class_mapping
 from src.models.mamba_like_1d import SpectraMamba
 
 

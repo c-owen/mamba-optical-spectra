@@ -1,3 +1,4 @@
+# train_coherent.py
 import argparse
 import logging
 import time
@@ -9,7 +10,7 @@ import torch.optim as optim
 import numpy as np
 
 # Import our new modules
-from src.data.datasets_coherent import get_coherent_dataloaders
+from src.data.datasets_depricated.datasets_coherent import get_coherent_dataloaders
 from src.models.coherent_models import CoherentCNN, CoherentMamba
 
 def setup_logging(verbosity: int = 1) -> None:

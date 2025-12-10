@@ -66,7 +66,7 @@ def generate_batch(size, min_cd, max_cd):
         
         # Apply CD Transfer Function
         # Factor 1e-12 converts ps/nm/km to s/m/km context
-        phase_factor = constant_factor * cd_val * 1e-12
+        phase_factor = constant_factor * cd_val * 1e-6
         transfer_func = np.exp(-1j * phase_factor * (freqs**2))
         
         rx_freq = fft(tx_signal[i]) * transfer_func

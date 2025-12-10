@@ -1,0 +1,28 @@
+Condition,SNR_dB,BER,CD_ps_nm,Linewidth_Hz
+Benign (Short Reach),12,0.0004,400.0,100000.0
+Benign (Short Reach),13,6e-05,400.0,100000.0
+Benign (Short Reach),14,4e-05,400.0,100000.0
+Benign (Short Reach),15,0.0,400.0,100000.0
+Benign (Short Reach),16,0.0,400.0,100000.0
+Benign (Short Reach),17,0.0,400.0,100000.0
+Benign (Short Reach),18,0.0,400.0,100000.0
+Benign (Short Reach),19,0.0,400.0,100000.0
+Benign (Short Reach),20,0.0,400.0,100000.0
+Standard (Target),12,0.01646,1200.0,500000.0
+Standard (Target),13,0.01306,1200.0,500000.0
+Standard (Target),14,0.01026,1200.0,500000.0
+Standard (Target),15,0.00848,1200.0,500000.0
+Standard (Target),16,0.0073,1200.0,500000.0
+Standard (Target),17,0.00626,1200.0,500000.0
+Standard (Target),18,0.00588,1200.0,500000.0
+Standard (Target),19,0.0056,1200.0,500000.0
+Standard (Target),20,0.00526,1200.0,500000.0
+Stress (Extreme),12,0.05964,1800.0,1000000.0
+Stress (Extreme),13,0.05544,1800.0,1000000.0
+Stress (Extreme),14,0.05186,1800.0,1000000.0
+Stress (Extreme),15,0.04922,1800.0,1000000.0
+Stress (Extreme),16,0.04722,1800.0,1000000.0
+Stress (Extreme),17,0.04636,1800.0,1000000.0
+Stress (Extreme),18,0.04508,1800.0,1000000.0
+Stress (Extreme),19,0.04424,1800.0,1000000.0
+Stress (Extreme),20,0.04384,1800.0,1000000.0

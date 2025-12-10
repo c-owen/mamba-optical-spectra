@@ -9,7 +9,7 @@ import torch.optim as optim
 import numpy as np
 
 # Import Data and the NEW Model
-from src.data.datasets_coherent import get_coherent_dataloaders
+from src.data.datasets_depricated.datasets_coherent import get_coherent_dataloaders
 from src.models.bimamba import CoherentBiMamba
 
 def setup_logging():
