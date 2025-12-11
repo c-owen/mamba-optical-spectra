@@ -1,6 +1,4 @@
-# cnn_1d.py
 import logging
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -9,12 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class SpectraCNN(nn.Module):
-    """
-    1D CNN baseline for optical spectra classification.
-
-    Input shape:  [batch_size, 1, num_points]
-    Output shape: [batch_size, num_classes]
-    """
+    """1D CNN baseline for optical spectra classification."""
 
     def __init__(
         self,
@@ -47,14 +40,6 @@ class SpectraCNN(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x: tensor of shape [batch_size, in_channels, num_points]
-
-        Returns:
-            logits: tensor of shape [batch_size, num_classes]
-        """
-        x = self.features(x)          # [B, C, 1]
-        x = x.squeeze(-1)             # [B, C]
-        logits = self.classifier(x)   # [B, num_classes]
-        return logits
+        # x: [B, C_in, L] -> logits: [B, num_classes]
+        x = self.features(x).squeeze(-1)
+        return self.classifier(x)
